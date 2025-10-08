@@ -1,0 +1,81 @@
+cmake_minimum_required(VERSION 3.20.0)
+
+set(CMAKE_CXX_STANDARD 20)
+set(LIBIGL_WITH_CGAL ON)
+set(CMAKE_TOOLCHAIN_FILE "D:\\Library\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake")
+# set(CMAKE_PREFIX_PATH "D:\\OwnLibrary" ${CMAKE_PREFIX_PATH})
+list(APPEND CMAKE_PREFIX_PATH "D:/OwnLibrary")
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
+project(hello_qt)
+
+# Find Qt5 components
+find_package(Qt5 REQUIRED COMPONENTS Widgets)
+find_package(amazing_cpp REQUIRED)
+
+add_executable(
+    ${PROJECT_NAME}_test
+    unit_test.cpp
+    hello_world.cpp
+    choose_file_test.cpp
+    choose_file_process_window.cpp
+)
+
+find_package(GTest CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME}_test GTest::gtest GTest::gmock Qt5::Widgets amazing_cpp::amazing_cpp)
+
+
+# this is for export libary for external use
+set(CMAKE_INSTALL_PREFIX "D:/OwnLibrary")
+
+add_library(
+    ${PROJECT_NAME}
+    choose_file_process_window.cpp
+)
+
+target_link_libraries(${PROJECT_NAME} PUBLIC Qt5::Widgets amazing_cpp::amazing_cpp)
+
+# 引入要用到的 CMake 模块
+include(CMakePackageConfigHelpers)
+include(GNUInstallDirs)
+
+# 基本安装及 Targets 文件的生成
+install(TARGETS ${PROJECT_NAME}
+    EXPORT ${PROJECT_NAME}-targets
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+# Targets 文件的安装
+install(EXPORT ${PROJECT_NAME}-targets
+    FILE ${PROJECT_NAME}-targets.cmake
+    NAMESPACE ${PROJECT_NAME}::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
+)
+
+# Config 文件的导出（与安装？）
+configure_package_config_file(
+    ${PROJECT_SOURCE_DIR}/cmake/config.cmake.in
+    ${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
+)
+
+# ConfigVersion 文件的导出
+write_basic_package_version_file(
+    ${PROJECT_NAME}-config-version.cmake
+    VERSION 0.1
+    COMPATIBILITY AnyNewerVersion
+)
+
+# Config 和 ConfigVersion 文件的安装
+install(FILES
+    ${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config.cmake
+    ${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
+)
+# install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(FILES "${PROJECT_SOURCE_DIR}/choose_file_process_window.h" DESTINATION include/${PROJECT_NAME})
