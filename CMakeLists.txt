@@ -21,6 +21,8 @@ add_executable(
     hello_world.cpp
     choose_file_test.cpp
     choose_file_process_window.cpp
+    hello_qt_button.cpp
+    hello_qt_text.cpp
 )
 
 find_package(GTest CONFIG REQUIRED)
